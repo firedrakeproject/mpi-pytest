@@ -14,6 +14,8 @@ name: Release
 # https://github.com/ArjanCodes/examples/blob/main/2024/publish_pypi/release.yaml
 
 on:
+  # TESTING
+  pull_request:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
@@ -118,7 +120,7 @@ jobs:
 
       - name: Publish distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        # testing
+        # TESTING
         with:
           repository-url: https://test.pypi.org/legacy/
 
