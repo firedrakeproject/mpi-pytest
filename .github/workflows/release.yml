@@ -14,9 +14,9 @@ name: Release
 # https://github.com/ArjanCodes/examples/blob/main/2024/publish_pypi/release.yaml
 
 on:
-  # TESTING
-  pull_request:
   push:
+    # TESTING
+    # branches: main
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
       - "v[0-9]+.[0-9]+.[0-9]+a[0-9]+"
