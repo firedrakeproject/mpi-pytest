@@ -1,0 +1,80 @@
+name: Publish release
+
+# Whenever we publish a release we want to:
+# * Upload a new version to PyPI
+# * Upload the built files to the GitHub release
+#
+# The process for making a release is therefore to:
+# 1. Modify the version specified in the pyproject.toml
+# 2. Make a release using the GitHub web interface
+#
+# This workflow was shamelessly taken (and modified) from 
+# https://github.com/NGSolve/ngsPETSc/blob/main/.github/workflows/release.yml and
+# https://github.com/ArjanCodes/examples/blob/main/2024/publish_pypi/release.yaml
+
+on:
+  release:
+    types: [published]
+
+env:
+  PACKAGE_NAME: "mpi-pytest"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build mpi-pytest
+        run: |
+          pip install build
+          python -m build .
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  pypi-publish:
+    name: Upload release to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: release
+    permissions:
+      id-token: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  github-release:
+    name: Upload artifacts to GitHub release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Upload artifacts to GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload ${{ github.event.tag_name }} dist/*
