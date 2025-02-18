@@ -1,90 +1,28 @@
 name: Release
 
-# Whenever we push a commit tagged with a version we want to:
+# Whenever we publish a release we want to:
 # * Upload a new version to PyPI
-# * Make a GitHub release containing the built files
+# * Upload the built files to the GitHub release
 #
 # The process for making a release is therefore to:
 # 1. Modify the version specified in the pyproject.toml
-# 2. Tag the commit where this change is made with a matching version
-# 3. Push the commit (potentially via a PR)
+# 2. Make a release using the GitHub web interface
 #
-# This workflow was shamelessly taken from 
+# This workflow was shamelessly taken (and modified) from 
 # https://github.com/NGSolve/ngsPETSc/blob/main/.github/workflows/release.yml and
 # https://github.com/ArjanCodes/examples/blob/main/2024/publish_pypi/release.yaml
 
 on:
-  # TESTING
+  # FIXME: undo before merge
   pull_request:
-  push:
-    branches: main
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
-      - "v[0-9]+.[0-9]+.[0-9]+a[0-9]+"
-      - "v[0-9]+.[0-9]+.[0-9]+b[0-9]+"
-      - "v[0-9]+.[0-9]+.[0-9]+rc[0-9]+"
-      - "v[0-9]+.[0-9]+.[0-9]+dev[0-9]+"
+  release:
+    types: [published]
 
 env:
   PACKAGE_NAME: "mpi-pytest"
 
 jobs:
-  extract-details:
-    runs-on: ubuntu-latest
-    outputs:
-      new-version: ${{ steps.release.outputs.new-version }}
-      suffix: ${{ steps.release.outputs.suffix }}
-      tag-name: ${{ steps.release.outputs.tag-name }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Extract tag information
-        id: release
-        run: |
-          if [ "${{ github.ref_type }}" = "tag" ]; then
-            TAG_NAME=${GITHUB_REF#refs/tags/}
-            NEW_VERSION=$(echo $TAG_NAME | awk -F'-' '{print $1}')
-            SUFFIX=$(echo $TAG_NAME | grep -oP '([a-u,w-z]|dev)+[0-9]+' || echo "")
-            echo "TAG_NAME=$TAG_NAME"
-            echo "new-version=${NEW_VERSION:1}" >> "$GITHUB_OUTPUT"
-            echo "suffix=$SUFFIX" >> "$GITHUB_OUTPUT"
-            echo "tag-name=$TAG_NAME" >> "$GITHUB_OUTPUT"
-            echo "Version is ${NEW_VERSION:1}"
-            echo "Suffix is $SUFFIX"
-            echo "Tag name is $TAG_NAME"
-          else
-            echo "No tag found"
-            exit 1
-          fi
-
-  check-pypi:
-    needs: extract-details
-    runs-on: ubuntu-latest
-    steps:
-      - name: Fetch information from PyPI
-        run: |
-          response=$(curl -s https://pypi.org/pypi/${{ env.PACKAGE_NAME }}/json || echo "{}")
-          latest_previous_version=$(echo $response | jq --raw-output "select(.releases != null) | .releases | keys_unsorted | last")
-          if [ -z "$latest_previous_version" ]; then
-            echo "Package not found on PyPI."
-            latest_previous_version="0.0.0"
-          fi
-          echo "Latest version on PyPI: $latest_previous_version"
-          echo "latest_previous_version=$latest_previous_version" >> $GITHUB_ENV
-
-      - name: Compare versions and exit if not newer
-        run: |
-          NEW_VERSION=${{ needs.extract-details.outputs.new_version }}
-          LATEST_VERSION=$latest_previous_version
-          if [ "$(printf '%s\n' "$LATEST_VERSION" "$NEW_VERSION" | sort -rV | head -n 1)" != "$NEW_VERSION" ] || [ "$NEW_VERSION" == "$LATEST_VERSION" ]; then
-            echo "The new version $NEW_VERSION is not greater than the latest version $LATEST_VERSION on PyPI."
-            exit 1
-          else
-            echo "The new version $NEW_VERSION is greater than the latest version $LATEST_VERSION on PyPI."
-          fi
-
   build:
-    needs: [extract-details, check-pypi]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -106,7 +44,7 @@ jobs:
 
   pypi-publish:
     name: Upload release to PyPI
-    needs: [build, extract-details]
+    needs: build
     runs-on: ubuntu-latest
     environment:
       name: release
@@ -121,29 +59,22 @@ jobs:
 
       - name: Publish distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        # TESTING
-        with:
-          repository-url: https://test.pypi.org/legacy/
 
   github-release:
-    name: Create GitHub release
-    needs: [build, extract-details]
+    name: Upload artifacts to GitHub release
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
 
-      - name: Create GitHub release
+      - name: Upload artifacts to GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release create ${{ needs.extract-details.outputs.tag_name }} dist/* --title ${{ needs.extract-details.outputs.tag_name }} --generate-notes
+        # run: gh release upload ${{ github.event.tag_name }} dist/*
+        run: gh release upload 2025.2.0.dev0 dist/*
