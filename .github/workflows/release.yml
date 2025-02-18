@@ -1,4 +1,4 @@
-name: Release
+name: Publish release
 
 # Whenever we publish a release we want to:
 # * Upload a new version to PyPI
@@ -13,8 +13,6 @@ name: Release
 # https://github.com/ArjanCodes/examples/blob/main/2024/publish_pypi/release.yaml
 
 on:
-  # FIXME: undo before merge
-  pull_request:
   release:
     types: [published]
 
@@ -32,7 +30,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install mpi-pytest
+      - name: Build mpi-pytest
         run: |
           pip install build
           python -m build .
@@ -68,6 +66,8 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
+
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -77,5 +77,4 @@ jobs:
       - name: Upload artifacts to GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        # run: gh release upload ${{ github.event.tag_name }} dist/*
-        run: gh release upload 2025.2.0.dev0 dist/*
+        run: gh release upload ${{ github.event.tag_name }} dist/*
