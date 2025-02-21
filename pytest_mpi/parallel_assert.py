@@ -9,8 +9,8 @@ def parallel_assert(assertion: bool, participating: bool = True, msg: str = "") 
     Parameters
     ----------
     assertion :
-        If this is `False` on any participating task, an `AssertionError` will 
-        be raised.
+        The assertion to check. If this is `False` on any participating task, an
+        `AssertionError` will be raised.
     participating :
         Whether the given rank should evaluate the assertion.
     msg :
