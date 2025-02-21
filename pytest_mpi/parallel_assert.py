@@ -3,14 +3,14 @@ import warnings
 from mpi4py import MPI
 
 
-def parallel_assert(assertion: bool, participating: bool = True, msg: str = "") -> None:
+def parallel_assert(assertion: bool, msg: str = "", *, participating: bool = True) -> None:
     """Make an assertion across ``COMM_WORLD``.
 
     Parameters
     ----------
     assertion :
         The assertion to check. If this is `False` on any participating task, an
-        `AssertionError` will be raised.
+        `AssertionError` will be raised. This argument can also be callable.
     participating :
         Whether the given rank should evaluate the assertion.
     msg :
@@ -20,9 +20,6 @@ def parallel_assert(assertion: bool, participating: bool = True, msg: str = "") 
     -----
     It is very important that ``parallel_assert`` is called collectively on all
     ranks simultaneously.
-    This function allows passing a callable instead of a boolean for the
-    `assertion` argument. This is useful in rare circumstances, such as when
-    the assertion is not defined on all tasks, but is not recommended.
 
 
     Example

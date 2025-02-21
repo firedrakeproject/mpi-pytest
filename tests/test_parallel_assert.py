@@ -1,4 +1,5 @@
 import pytest
+from mpi4py import MPI
 from pytest_mpi.parallel_assert import parallel_assert
 
 
@@ -20,12 +21,11 @@ def test_parallel_assert_equivalent_to_assert_in_serial(expression):
 
 @pytest.mark.parallel([1, 2, 3])
 def test_parallel_assert_all_tasks():
-    from mpi4py import MPI
     comm = MPI.COMM_WORLD
-    expression = comm.rank < comm.size // 2
+    expression = comm.rank < comm.size // 2  # will be True on some tasks but False on others
 
     try:
-        parallel_assert(expression)
+        parallel_assert(expression, 'Failed')
         raised_exception = False
     except AssertionError:
         raised_exception = True
@@ -35,13 +35,12 @@ def test_parallel_assert_all_tasks():
 
 @pytest.mark.parallel([1, 2, 3])
 def test_parallel_assert_participating_tasks_only():
-    from mpi4py import MPI
     comm = MPI.COMM_WORLD
-    expression = comm.rank < comm.size // 2
-    raised_exception = False
+    expression = comm.rank < comm.size // 2  # will be True on some tasks but False on others
 
     try:
         parallel_assert(expression, participating=expression)
+        raised_exception = False
     except AssertionError:
         raised_exception = True
 
@@ -50,13 +49,12 @@ def test_parallel_assert_participating_tasks_only():
 
 @pytest.mark.parallel([1, 2, 3])
 def test_legacy_parallel_assert():
-    from mpi4py import MPI
     comm = MPI.COMM_WORLD
-    expression = comm.rank < comm.size // 2
-    raised_exception = False
+    expression = comm.rank < comm.size // 2  # will be True on some tasks but False on others
 
     try:
         parallel_assert(lambda: expression, participating=expression)
+        raised_exception = False
     except AssertionError:
         raised_exception = True
 
