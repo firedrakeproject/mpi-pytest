@@ -6,3 +6,4 @@ channels:
 dependencies:
   - pytest
   - mpich
+  - mpi4py
