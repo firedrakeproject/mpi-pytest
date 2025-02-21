@@ -1,0 +1,8 @@
+---
+
+name: MPICH_test_env
+channels:
+  - conda-forge
+dependencies:
+  - pytest
+  - mpich
