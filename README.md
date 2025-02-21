@@ -129,7 +129,7 @@ from pytest_mpi import parallel_assert
 @pytest.mark.parallel(2)
 def test_something():
     # this will fail on *all* ranks
-    parallel_assert(lambda: COMM_WORLD.rank == 0)
+    parallel_assert(COMM_WORLD.rank == 0)
     ...
 ```
 
