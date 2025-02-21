@@ -23,10 +23,10 @@ def test_parallel_assert_all_tasks():
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
     expression = comm.rank < comm.size // 2
-    raised_exception = False
 
     try:
         parallel_assert(expression)
+        raised_exception = False
     except AssertionError:
         raised_exception = True
 
