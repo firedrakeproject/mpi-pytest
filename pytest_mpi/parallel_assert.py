@@ -10,11 +10,12 @@ def parallel_assert(assertion: bool, msg: str = "", *, participating: bool = Tru
     ----------
     assertion :
         The assertion to check. If this is `False` on any participating task, an
-        `AssertionError` will be raised. This argument can also be callable.
-    participating :
-        Whether the given rank should evaluate the assertion.
+        `AssertionError` will be raised. This argument can also be a callable
+        that returns a `bool` (deprecated).
     msg :
         Optional error message to print out on failure.
+    participating :
+        Whether the given rank should evaluate the assertion.
 
     Notes
     -----
@@ -39,8 +40,9 @@ def parallel_assert(assertion: bool, msg: str = "", *, participating: bool = Tru
     """
     if participating:
         if callable(assertion):
-            warnings.warn("Passing callables to parallel_assert is no longer recommended."
-                          "Please pass booleans instead.", FutureWarning)
+            warnings.warn("Passing callables to parallel_assert is no longer"
+                          "recommended. Please pass booleans instead.",
+                          FutureWarning)
             result = assertion()
         else:
             result = assertion

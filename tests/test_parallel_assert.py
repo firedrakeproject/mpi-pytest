@@ -51,9 +51,11 @@ def test_parallel_assert_participating_tasks_only():
 def test_legacy_parallel_assert():
     comm = MPI.COMM_WORLD
     expression = comm.rank < comm.size // 2  # will be True on some tasks but False on others
+    if expression:
+        local_expression = expression  # This variable is undefined on non-participating tasks
 
     try:
-        parallel_assert(lambda: expression, participating=expression)
+        parallel_assert(lambda: local_expression, participating=expression)
         raised_exception = False
     except AssertionError:
         raised_exception = True
