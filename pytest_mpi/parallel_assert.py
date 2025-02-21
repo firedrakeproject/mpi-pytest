@@ -42,8 +42,8 @@ def parallel_assert(assertion: bool, participating: bool = True, msg: str = "") 
     """
     if participating:
         if callable(assertion):
-            warnings.warn('Passing callables to parallel_assert is no longer recommended.'
-                          'Please pass booleans instead.')
+            warnings.warn("Passing callables to parallel_assert is no longer recommended."
+                          "Please pass booleans instead.", FutureWarning)
             result = assertion()
         else:
             result = assertion
