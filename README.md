@@ -1,3 +1,5 @@
+[![badge-ga](https://github.com/firedrakeproject/mpi-pytest/actions/workflows/ci_pipeline.yml/badge.svg?branch=master)](https://github.com/firedrakeproject/mpi-pytest/actions/workflows/ci_pipeline.yml)
+
 # mpi-pytest
 
 Pytest plugin that lets you run tests in parallel with MPI.
