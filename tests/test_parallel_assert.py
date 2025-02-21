@@ -4,19 +4,18 @@ from pytest_mpi.parallel_assert import parallel_assert
 
 @pytest.mark.parametrize('expression', [True, False])
 def test_parallel_assert_equivalent_to_assert_in_serial(expression):
-    raised_exception = True
-
     try:
         parallel_assert(expression)
-        raised_exception = False
+        parallel_raised_exception = False
     except AssertionError:
-        try:
-            assert expression
-        except AssertionError:
-            pass
-
-    if not raised_exception:
+        parallel_raised_exception = True  
+    try:
         assert expression
+        serial_raised_exception = False
+    except AssertionError:
+        serial_raised_exception = True
+
+    assert serial_raised_exception == parallel_raised_exception
 
 
 @pytest.mark.parallel([1, 2, 3])
