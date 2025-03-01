@@ -1,3 +1,5 @@
+[![badge-ga](https://github.com/firedrakeproject/mpi-pytest/actions/workflows/ci_pipeline.yml/badge.svg?branch=master)](https://github.com/firedrakeproject/mpi-pytest/actions/workflows/ci_pipeline.yml)
+
 # mpi-pytest
 
 Pytest plugin that lets you run tests in parallel with MPI.
@@ -129,7 +131,7 @@ from pytest_mpi import parallel_assert
 @pytest.mark.parallel(2)
 def test_something():
     # this will fail on *all* ranks
-    parallel_assert(lambda: COMM_WORLD.rank == 0)
+    parallel_assert(COMM_WORLD.rank == 0)
     ...
 ```
 
