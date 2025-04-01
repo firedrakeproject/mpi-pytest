@@ -86,12 +86,27 @@ def pytest_generate_tests(metafunc):
 
 @pytest.hookimpl()
 def pytest_collection_modifyitems(config, items):
+    from mpi4py import MPI
+
     global _plugin_in_use
 
     _plugin_in_use = any(item.get_closest_marker("parallel") for item in items)
 
     if not _plugin_in_use:
         return
+
+    if MPI.COMM_WORLD.size == 1:
+        has_multi_rank_tests = False
+        for item in items:
+            if item.get_closest_marker("parallel") and _extract_nprocs_for_single_test(item) > 1:
+                has_multi_rank_tests = True
+                break
+        if has_multi_rank_tests and not _mpi_supports_multiple_inits():
+            raise pytest.UsageError(
+                "MPI library does not support multiple calls to MPI_Init so parallel "
+                "tests must be run with mpiexec on the 'outside'. For example:\n\t"
+                "mpiexec -n 2 pytest test_something.py -m parallel[2]"
+            )
 
     for item in items:
         if item.get_closest_marker("parallel"):
@@ -188,6 +203,17 @@ def _xdist_active(session):
         import xdist
         return xdist.is_xdist_controller(session) or xdist.is_xdist_worker(session)
     except ImportError:
+        return False
+
+
+def _mpi_supports_multiple_inits():
+    from mpi4py import MPI
+
+    assert MPI.Is_initialized()
+    try:
+        MPI.Init()
+        return True
+    except MPI.Exception:
         return False
 
 
