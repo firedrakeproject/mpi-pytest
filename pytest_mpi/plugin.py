@@ -6,6 +6,7 @@ import sys
 
 from pathlib import Path
 from warnings import warn
+from pytest_mpi import impl
 
 import pytest
 
@@ -230,9 +231,14 @@ def _set_parallel_callback(item):
         "--disable-warnings", "--show-capture=no"
     ]
 
-    cmd = [
-        "mpiexec", "-n", "1", "-genv", CHILD_PROCESS_FLAG, "1", *executable
-    ] + pytest_args + [
+    if impl == "Open MPI":
+        cmd = ["mpiexec", "-n", "1", "-x", f"{CHILD_PROCESS_FLAG}=1", *executable]
+    elif impl == "MPICH":
+        cmd = ["mpiexec", "-n", "1", "-genv", CHILD_PROCESS_FLAG, "1", *executable]
+    else:
+        raise ValueError("Unknow MPI implemention")
+
+    cmd += pytest_args + [
         ":", "-n", f"{nprocs-1}", *executable
     ] + quieter_pytest_args
 
