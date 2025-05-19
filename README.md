@@ -101,7 +101,7 @@ with `mpiexec`, no additional configuration is necessary. For example, to run
 all of the parallel tests on 2 ranks one needs to execute:
 
 ```bash
-$ mpiexec -n 2 pytest -m parallel[2]
+$ mpiexec -n 2 pytest -m "parallel[2]"
 ```
 
 ## `parallel_assert`
