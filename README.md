@@ -1,5 +1,3 @@
-[![badge-ga](https://github.com/firedrakeproject/mpi-pytest/actions/workflows/ci_pipeline.yml/badge.svg?branch=master)](https://github.com/firedrakeproject/mpi-pytest/actions/workflows/ci_pipeline.yml)
-
 # mpi-pytest
 
 Pytest plugin that lets you run tests in parallel with MPI.
@@ -53,7 +51,7 @@ to each test to allow one to select all tests with a particular number of proces
 For example, to select all parallel tests on 3 processors, one should run:
 
 ```bash
-$ mpiexec -n 3 pytest -m parallel[3]
+$ mpiexec -n 3 pytest -m "parallel[3]"
 ```
 
 Serial tests - those either unmarked or marked `@pytest.mark.parallel(1)` - can
