@@ -308,19 +308,19 @@ def detect_mpi_implementation() -> MPIImplementation:
             text=True,
             check=True
         )
-        output = result.stdout.lower()
-
-        if "open mpi" in output or "open-rte" in output:
-            return MPIImplementation.OPENMPI
-        elif "mpich" in output:
-            return MPIImplementation.MPICH
-        else:
-            raise RuntimeError(
-                "MPI distribution is not recognised, please run in non-forking "
-                "mode where you can specify your MPI executable"
-            )
     except FileNotFoundError:
         raise FileNotFoundError(
             "'mpiexec' not found on your PATH, please run in non-forking mode "
             "where you can specify a different MPI executable"
+        )
+
+    output = result.stdout.lower()
+    if "open mpi" in output or "open-rte" in output:
+        return MPIImplementation.OPENMPI
+    elif "mpich" in output:
+        return MPIImplementation.MPICH
+    else:
+        raise RuntimeError(
+            "MPI distribution is not recognised, please run in non-forking "
+            "mode where you can specify your MPI executable"
         )
