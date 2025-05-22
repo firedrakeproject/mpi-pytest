@@ -1,4 +1,5 @@
 import collections
+import enum
 import numbers
 import os
 import subprocess
@@ -6,7 +7,6 @@ import sys
 
 from pathlib import Path
 from warnings import warn
-from pytest_mpi import impl
 
 import pytest
 
@@ -231,12 +231,12 @@ def _set_parallel_callback(item):
         "--disable-warnings", "--show-capture=no"
     ]
 
-    if impl == "Open MPI":
+    impl = detect_mpi_implementation()
+    if impl == MPIImplementation.OPENMPI:
         cmd = ["mpiexec", "-n", "1", "-x", f"{CHILD_PROCESS_FLAG}=1", *executable]
-    elif impl == "MPICH":
-        cmd = ["mpiexec", "-n", "1", "-genv", CHILD_PROCESS_FLAG, "1", *executable]
     else:
-        raise ValueError("Unknow MPI implemention")
+        assert impl == MPIImplementation.MPICH
+        cmd = ["mpiexec", "-n", "1", "-genv", CHILD_PROCESS_FLAG, "1", *executable]
 
     cmd += pytest_args + [
         ":", "-n", f"{nprocs-1}", *executable
@@ -292,3 +292,35 @@ def _parse_marker_nprocs(marker):
 
 def _as_tuple(arg):
     return tuple(arg) if isinstance(arg, collections.abc.Iterable) else (arg,)
+
+
+class MPIImplementation(enum.Enum):
+    OPENMPI = enum.auto()
+    MPICH = enum.auto()
+
+
+def detect_mpi_implementation() -> MPIImplementation:
+    try:
+        result = subprocess.run(
+            ["mpiexec", "--version"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            check=True
+        )
+        output = result.stdout.lower()
+
+        if "open mpi" in output or "open-rte" in output:
+            return MPIImplementation.OPENMPI
+        elif "mpich" in output:
+            return MPIImplementation.MPICH
+        else:
+            raise RuntimeError(
+                "MPI distribution is not recognised, please run in non-forking "
+                "mode where you can specify your MPI executable"
+            )
+    except FileNotFoundError:
+        raise FileNotFoundError(
+            "'mpiexec' not found on your PATH, please run in non-forking mode "
+            "where you can specify a different MPI executable"
+        )
