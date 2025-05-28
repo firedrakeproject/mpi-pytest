@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '1 5 * * 1'
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.9', '3.10', '3.11', '3.12', '3.13']
+        mpi: ['mpich', 'openmpi']
+    env:
+      PYTEST_MPI_MAX_NPROCS: 3
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Conda environment with Micromamba
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-file: ".github/etc/test_environment_${{ matrix.mpi }}.yml"
+          create-args: >-
+              python=${{ matrix.python }}
+
+      - name: Install mpi-pytest
+        run: pip install --no-deps -e .
+
+      - name: Run tests (MPICH)
+        if: matrix.mpi == 'mpich'
+        run: |
+          : # 'forking' mode
+          pytest -v tests
+          : # 'non-forking' mode
+          mpiexec -n 1 pytest -v -m "not parallel or parallel[1]" tests
+          mpiexec -n 2 pytest -v -m parallel[2] tests
+          mpiexec -n 3 pytest -v -m parallel[3] tests
+
+      - name: Run tests (OpenMPI)
+        if: matrix.mpi == 'openmpi'
+        run: |
+          : # 'forking' mode
+          pytest -v tests
+          : # 'non-forking' mode
+          mpiexec --oversubscribe -n 1 pytest -v -m "not parallel or parallel[1]" tests
+          mpiexec --oversubscribe -n 2 pytest -v -m parallel[2] tests
+          mpiexec --oversubscribe -n 3 pytest -v -m parallel[3] tests
