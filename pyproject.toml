@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mpi-pytest"
 # <year.month.patch>
-version = "2025.5.0.dev0"
+version = "2025.6.0.dev0"
 dependencies = ["mpi4py", "pytest"]
 authors = [
   { name="Connor Ward", email="c.ward20@imperial.ac.uk" },
