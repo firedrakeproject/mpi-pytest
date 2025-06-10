@@ -1,9 +1,7 @@
----
-
-name: OpenMPI_test_env
+name: OpenMPI test environment
 channels:
   - conda-forge
 dependencies:
-  - pytest
-  - openmpi
   - mpi4py
+  - openmpi
+  - pytest
