@@ -233,10 +233,12 @@ def _set_parallel_callback(item):
 
     impl = detect_mpi_implementation()
     if impl == MPIImplementation.OPENMPI:
-        cmd = ["mpiexec", "-n", "1", "-x", f"{CHILD_PROCESS_FLAG}=1", *executable]
-    else:
-        assert impl == MPIImplementation.MPICH
+        cmd = ["mpiexec", "--oversubscribe", "-n", "1", "-x", f"{CHILD_PROCESS_FLAG}=1", *executable]
+    elif impl == MPIImplementation.MPICH:
         cmd = ["mpiexec", "-n", "1", "-genv", CHILD_PROCESS_FLAG, "1", *executable]
+    else:
+        assert impl == MPIImplementation.MSMPI
+        cmd = ["mpiexec", "-n", "1", "-env", CHILD_PROCESS_FLAG, "1", *executable]
 
     cmd += pytest_args + [
         ":", "-n", f"{nprocs-1}", *executable
@@ -297,6 +299,7 @@ def _as_tuple(arg):
 class MPIImplementation(enum.Enum):
     OPENMPI = enum.auto()
     MPICH = enum.auto()
+    MSMPI = eunm.auto()
 
 
 def detect_mpi_implementation() -> MPIImplementation:
@@ -309,16 +312,27 @@ def detect_mpi_implementation() -> MPIImplementation:
             check=True
         )
     except FileNotFoundError:
-        raise FileNotFoundError(
-            "'mpiexec' not found on your PATH, please run in non-forking mode "
-            "where you can specify a different MPI executable"
-        )
+        try:
+            result = subprocess.run(
+                ["mpiexec"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                check=True
+            )
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                "'mpiexec' not found on your PATH, please run in non-forking mode "
+                "where you can specify a different MPI executable"
+            )
 
     output = result.stdout.lower()
     if "open mpi" in output or "open-rte" in output:
         return MPIImplementation.OPENMPI
     elif "mpich" in output:
         return MPIImplementation.MPICH
+    elif "Microsoft" in output:
+        return MPIImplementation.MSMPI
     else:
         raise RuntimeError(
             "MPI distribution is not recognised, please run in non-forking "
