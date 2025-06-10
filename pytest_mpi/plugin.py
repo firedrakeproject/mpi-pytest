@@ -299,7 +299,7 @@ def _as_tuple(arg):
 class MPIImplementation(enum.Enum):
     OPENMPI = enum.auto()
     MPICH = enum.auto()
-    MSMPI = eunm.auto()
+    MSMPI = enum.auto()
 
 
 def detect_mpi_implementation() -> MPIImplementation:
