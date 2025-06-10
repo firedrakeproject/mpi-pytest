@@ -8,6 +8,13 @@ on:
   schedule:
     - cron: '1 5 * * 1'
 
+# Cancel running jobs if new commits are pushed
+concurrency:
+  group: >
+    ${{ github.workflow }}-
+    ${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   tests:
     strategy:
@@ -33,9 +40,10 @@ jobs:
           - mpi: msmpi
             mpiexec: mpiexec
     runs-on: ${{ matrix.os }}
-    # defaults:
-    #   run:
-    #     shell: bash -l {0}
+    defaults:
+      run:
+        # Micromamba needs a login shell to make sure the environment is active
+        shell: bash -el {0}
     env:
       PYTEST_MPI_MAX_NPROCS: 3
     steps:
@@ -55,8 +63,9 @@ jobs:
         run: |
           : # 'forking' mode
           pytest -v tests
+          : # echo $PIPESTATUS
           : # 'non-forking' mode
-          # FIXME
-          # ${{ matrix.mpiexec }} -n 1 pytest -v -m "not parallel or parallel[1]" tests
-          # ${{ matrix.mpiexec }} -n 2 pytest -v -m parallel[2] tests
-          # ${{ matrix.mpiexec }} -n 3 pytest -v -m parallel[3] tests
+          : # FIXME
+          : # ${{ matrix.mpiexec }} -n 1 pytest -v -m "not parallel or parallel[1]" tests
+          : # ${{ matrix.mpiexec }} -n 2 pytest -v -m parallel[2] tests
+          : # ${{ matrix.mpiexec }} -n 3 pytest -v -m parallel[3] tests
