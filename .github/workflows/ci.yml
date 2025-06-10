@@ -33,9 +33,9 @@ jobs:
           - mpi: msmpi
             mpiexec: mpiexec
     runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        shell: bash -l {0}
+    # defaults:
+    #   run:
+    #     shell: bash -l {0}
     env:
       PYTEST_MPI_MAX_NPROCS: 3
     steps:
