@@ -24,10 +24,14 @@ jobs:
           - mpi: msmpi
             mpiexec: mpiexec
         exclude:
-          - os: [ubuntu-latest, macos-latest]
+          - os: ubuntu-latest
+            mpi: msmpi
+          - os: macos-latest
             mpi: msmpi
           - os: windows-latest
-            mpi: [mpich, openmpi]
+            mpi: mpich
+          - os: windows-latest
+            mpi: openmpi
     runs-on: ${{ matrix.os }}
     defaults:
       run:
