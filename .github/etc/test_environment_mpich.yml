@@ -1,4 +1,4 @@
-name: MPICH test environment
+name: MPICH-test-environment
 channels:
   - conda-forge
 dependencies:

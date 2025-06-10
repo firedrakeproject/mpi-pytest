@@ -16,13 +16,6 @@ jobs:
         python: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
         os: [ubuntu-latest, macos-latest, windows-latest]
         mpi: [mpich, openmpi, msmpi]
-        include:
-          - mpi: mpich
-            mpiexec: mpiexec
-          - mpi: openmpi
-            mpiexec: mpiexec --oversubscribe
-          - mpi: msmpi
-            mpiexec: mpiexec
         exclude:
           - os: ubuntu-latest
             mpi: msmpi
@@ -32,6 +25,13 @@ jobs:
             mpi: mpich
           - os: windows-latest
             mpi: openmpi
+        include:
+          - mpi: mpich
+            mpiexec: mpiexec
+          - mpi: openmpi
+            mpiexec: mpiexec --oversubscribe
+          - mpi: msmpi
+            mpiexec: mpiexec
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -51,7 +51,7 @@ jobs:
       - name: Install mpi-pytest
         run: pip install --no-deps -e .
 
-      - name: Run tests (MPICH)
+      - name: Run tests
         run: |
           : # 'forking' mode
           pytest -v tests

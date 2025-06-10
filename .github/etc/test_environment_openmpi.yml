@@ -1,4 +1,4 @@
-name: OpenMPI test environment
+name: OpenMPI-test-environment
 channels:
   - conda-forge
 dependencies:

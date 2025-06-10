@@ -1,4 +1,4 @@
-name: MSMPI test environment
+name: MSMPI-test-environment
 channels:
   - conda-forge
 dependencies:
