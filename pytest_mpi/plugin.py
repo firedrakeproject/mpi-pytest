@@ -4,6 +4,7 @@ import numbers
 import os
 import subprocess
 import sys
+from subprocess import CalledProcessError
 
 from pathlib import Path
 from warnings import warn
@@ -303,6 +304,8 @@ class MPIImplementation(enum.Enum):
 
 
 def detect_mpi_implementation() -> MPIImplementation:
+    result = None
+
     try:
         result = subprocess.run(
             ["mpiexec", "--version"],
@@ -311,7 +314,11 @@ def detect_mpi_implementation() -> MPIImplementation:
             text=True,
             check=True
         )
-    except FileNotFoundError:
+    except CalledProcessError:
+        pass
+
+    # MSMPI can be detected by just calling 'mpiexec'
+    if result is None and sys.platform.casefold().startswith("win"):
         try:
             result = subprocess.run(
                 ["mpiexec"],
@@ -320,18 +327,21 @@ def detect_mpi_implementation() -> MPIImplementation:
                 text=True,
                 check=True
             )
-        except FileNotFoundError:
-            raise FileNotFoundError(
-                "'mpiexec' not found on your PATH, please run in non-forking mode "
-                "where you can specify a different MPI executable"
-            )
+        except CalledProcessError:
+            pass
+
+    if result is None:
+        raise FileNotFoundError(
+            "'mpiexec' not found on your PATH, please run in non-forking mode "
+            "where you can specify a different MPI executable"
+        )
 
     output = result.stdout.lower()
     if "open mpi" in output or "open-rte" in output:
         return MPIImplementation.OPENMPI
     elif "mpich" in output:
         return MPIImplementation.MPICH
-    elif "Microsoft" in output:
+    elif "microsoft" in output:
         return MPIImplementation.MSMPI
     else:
         raise RuntimeError(
