@@ -15,9 +15,3 @@ def test_parallel_marker_with_int():
 @pytest.mark.parallel([2, 3])
 def test_parallel_marker_with_list():
     assert MPI.COMM_WORLD.size in {2, 3}
-
-
-# testing
-@pytest.mark.parallel()
-def test_that_should_fail():
-    assert False
