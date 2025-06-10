@@ -16,8 +16,10 @@ readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.8"
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "Framework :: Pytest",
+  "Programming Language :: Python :: 3",
+  "Framework :: Pytest",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
 ]
 
 [project.entry-points.pytest11]
