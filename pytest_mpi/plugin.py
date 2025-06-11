@@ -4,6 +4,7 @@ import numbers
 import os
 import subprocess
 import sys
+from subprocess import CalledProcessError
 
 from pathlib import Path
 from warnings import warn
@@ -233,10 +234,12 @@ def _set_parallel_callback(item):
 
     impl = detect_mpi_implementation()
     if impl == MPIImplementation.OPENMPI:
-        cmd = ["mpiexec", "-n", "1", "-x", f"{CHILD_PROCESS_FLAG}=1", *executable]
-    else:
-        assert impl == MPIImplementation.MPICH
+        cmd = ["mpiexec", "--oversubscribe", "-n", "1", "-x", f"{CHILD_PROCESS_FLAG}=1", *executable]
+    elif impl == MPIImplementation.MPICH:
         cmd = ["mpiexec", "-n", "1", "-genv", CHILD_PROCESS_FLAG, "1", *executable]
+    else:
+        assert impl == MPIImplementation.MSMPI
+        cmd = ["mpiexec", "-n", "1", "-env", CHILD_PROCESS_FLAG, "1", *executable]
 
     cmd += pytest_args + [
         ":", "-n", f"{nprocs-1}", *executable
@@ -297,9 +300,12 @@ def _as_tuple(arg):
 class MPIImplementation(enum.Enum):
     OPENMPI = enum.auto()
     MPICH = enum.auto()
+    MSMPI = enum.auto()
 
 
 def detect_mpi_implementation() -> MPIImplementation:
+    result = None
+
     try:
         result = subprocess.run(
             ["mpiexec", "--version"],
@@ -308,7 +314,23 @@ def detect_mpi_implementation() -> MPIImplementation:
             text=True,
             check=True
         )
-    except FileNotFoundError:
+    except CalledProcessError:
+        pass
+
+    # MSMPI can be detected by just calling 'mpiexec'
+    if result is None and sys.platform.casefold().startswith("win"):
+        try:
+            result = subprocess.run(
+                ["mpiexec"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                check=True
+            )
+        except CalledProcessError:
+            pass
+
+    if result is None:
         raise FileNotFoundError(
             "'mpiexec' not found on your PATH, please run in non-forking mode "
             "where you can specify a different MPI executable"
@@ -319,6 +341,8 @@ def detect_mpi_implementation() -> MPIImplementation:
         return MPIImplementation.OPENMPI
     elif "mpich" in output:
         return MPIImplementation.MPICH
+    elif "microsoft" in output:
+        return MPIImplementation.MSMPI
     else:
         raise RuntimeError(
             "MPI distribution is not recognised, please run in non-forking "
