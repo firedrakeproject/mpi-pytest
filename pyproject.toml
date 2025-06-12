@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -13,7 +13,7 @@ authors = [
 ]
 description = "A pytest plugin for executing tests in parallel with MPI"
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "LGPL-3.0-or-later"
 requires-python = ">=3.8"
 classifiers = [
   "Programming Language :: Python :: 3",
