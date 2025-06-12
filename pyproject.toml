@@ -14,7 +14,7 @@ authors = [
 description = "A pytest plugin for executing tests in parallel with MPI"
 readme = "README.md"
 license = "LGPL-3.0-or-later"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 classifiers = [
   "Programming Language :: Python :: 3",
   "Framework :: Pytest",
