@@ -20,6 +20,7 @@ classifiers = [
   "Framework :: Pytest",
   "Operating System :: MacOS",
   "Operating System :: POSIX :: Linux",
+  "Operating System :: Microsoft :: Windows",
 ]
 
 [project.entry-points.pytest11]

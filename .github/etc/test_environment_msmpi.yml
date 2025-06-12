@@ -1,7 +1,7 @@
-name: OpenMPI-test-environment
+name: MSMPI-test-environment
 channels:
   - conda-forge
 dependencies:
   - mpi4py
-  - openmpi
+  - msmpi
   - pytest

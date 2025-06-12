@@ -8,23 +8,42 @@ on:
   schedule:
     - cron: '1 5 * * 1'
 
+# Cancel running jobs if new commits are pushed
+concurrency:
+  group: >
+    ${{ github.workflow }}-
+    ${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   tests:
     strategy:
       fail-fast: false
       matrix:
         python: ['3.9', '3.10', '3.11', '3.12', '3.13']
-        os: [ubuntu-latest, macos-latest]
-        mpi: [mpich, openmpi]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        mpi: [mpich, openmpi, msmpi]
+        exclude:
+          - os: ubuntu-latest
+            mpi: msmpi
+          - os: macos-latest
+            mpi: msmpi
+          - os: windows-latest
+            mpi: mpich
+          - os: windows-latest
+            mpi: openmpi
         include:
           - mpi: mpich
             mpiexec: mpiexec
           - mpi: openmpi
             mpiexec: mpiexec --oversubscribe
+          - mpi: msmpi
+            mpiexec: mpiexec
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        shell: bash -l {0}
+        # Micromamba needs a login shell to make sure the environment is active
+        shell: bash -el {0}
     env:
       PYTEST_MPI_MAX_NPROCS: 3
     steps:
@@ -40,7 +59,7 @@ jobs:
       - name: Install mpi-pytest
         run: pip install --no-deps -e .
 
-      - name: Run tests (MPICH)
+      - name: Run tests
         run: |
           : # 'forking' mode
           pytest -v tests
