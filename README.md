@@ -138,3 +138,20 @@ def test_something():
 `mpi-pytest` respects the environment variable `PYTEST_MPI_MAX_NPROCS`, which defines
 the maximum number of processes that can be requested by a parallel marker. If this
 value is exceeded an error will be raised.
+
+## Copyright
+
+Copyright (C) 2025 Imperial College London and others
+
+mpi-pytest is free software: you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+mpi-pytest is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with mpi-pytest. If not, see <https://www.gnu.org/licenses/>.
