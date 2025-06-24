@@ -322,6 +322,7 @@ def detect_mpi_implementation() -> MPIImplementation:
             "open mpi",
             "open-mpi",
             "openmpi",
+            "openrte",
             "open rte",
             "open-rte",
         ]
