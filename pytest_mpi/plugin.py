@@ -93,10 +93,6 @@ def pytest_collection_modifyitems(config, items):
 
     _plugin_in_use = any(item.get_closest_marker("parallel") for item in items)
 
-    # if mpi-pytest is not being used then don't mark anything
-    if not _plugin_in_use:
-        return
-
     for item in items:
         if item.get_closest_marker("parallel"):
             nprocs = _extract_nprocs_for_single_test(item)
