@@ -88,25 +88,34 @@ def pytest_generate_tests(metafunc):
 
 @pytest.hookimpl()
 def pytest_collection_modifyitems(config, items):
+    """Add 'parallel[N]' markers to each test."""
     global _plugin_in_use
 
     _plugin_in_use = any(item.get_closest_marker("parallel") for item in items)
 
+    # if mpi-pytest is not being used then don't mark anything
     if not _plugin_in_use:
         return
 
     for item in items:
         if item.get_closest_marker("parallel"):
-            # Add extra markers to each test to allow for querying specific levels of
-            # parallelism (e.g. "-m parallel[3]")
             nprocs = _extract_nprocs_for_single_test(item)
-            new_marker = f"parallel[{nprocs}]"
-            if new_marker not in pytest.mark._markers:
-                config.addinivalue_line(
-                    "markers",
-                    f"{new_marker}: internal marker"
-                )
-            item.add_marker(getattr(pytest.mark, new_marker))
+            marker_name = f"parallel[{nprocs}]"
+        else:
+            # mark serial tests as 'parallel[1]'
+            marker_name = "parallel[1]"
+
+        _maybe_register_marker(config, marker_name)
+        item.add_marker(getattr(pytest.mark, marker_name))
+
+
+def _maybe_register_marker(config, marker_name: str) -> None:
+    """Register ``marker_name`` as a new marker if it does not already exist."""
+    if marker_name not in pytest.mark._markers:
+        config.addinivalue_line(
+            "markers",
+            f"{marker_name}: internal marker"
+        )
 
 
 @pytest.hookimpl()

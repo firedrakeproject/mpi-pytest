@@ -51,14 +51,14 @@ to each test to allow one to select all tests with a particular number of proces
 For example, to select all parallel tests on 3 processors, one should run:
 
 ```bash
-$ mpiexec -n 3 pytest -m "parallel[3]"
+$ mpiexec -n 3 pytest -m parallel[3]
 ```
 
 Serial tests - those either unmarked or marked `@pytest.mark.parallel(1)` - can
 be selected by running:
 
 ```bash
-$ pytest -m "not parallel or parallel[1]"
+$ pytest -m parallel[1]
 ```
 
 ### Forking mode
@@ -84,10 +84,6 @@ This is convenient for development for a number of reasons:
 
 There are however a number of downsides:
 
-* Only one mainstream MPI distribution ([MPICH](https://www.mpich.org/)) supports
-  nested calls to `MPI_Init`. If your 'parent' `pytest` process initialises MPI
-  (for instance by executing `from mpi4py import MPI`) then this will cause non-MPICH
-  MPI distributions to crash.
 * Forking a subprocess can be expensive since a completely fresh Python interpreter
   is launched each time.
 * Sandboxing each test means that polluted global state at the end of a test cannot
@@ -101,7 +97,7 @@ with `mpiexec`, no additional configuration is necessary. For example, to run
 all of the parallel tests on 2 ranks one needs to execute:
 
 ```bash
-$ mpiexec -n 2 pytest -m "parallel[2]"
+$ mpiexec -n 2 pytest -m parallel[2]
 ```
 
 ## `parallel_assert`
