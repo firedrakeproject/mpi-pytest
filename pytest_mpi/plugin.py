@@ -1,5 +1,6 @@
 import collections
 import enum
+import functools
 import numbers
 import os
 import subprocess
@@ -302,6 +303,7 @@ class MPIImplementation(enum.Enum):
     MSMPI = enum.auto()
 
 
+@functools.cache
 def detect_mpi_implementation() -> MPIImplementation:
     from mpi4py import rc
 
