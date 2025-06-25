@@ -315,7 +315,9 @@ def detect_mpi_implementation() -> MPIImplementation:
             "where you can specify a different MPI executable"
         )
 
-    if any(
+    if "mpich" in version:
+        return MPIImplementation.MPICH
+    elif any(
         version_str in version
         for version_str in [
             "open mpi",
@@ -327,8 +329,6 @@ def detect_mpi_implementation() -> MPIImplementation:
         ]
     ):
         return MPIImplementation.OPENMPI
-    elif "mpich" in version:
-        return MPIImplementation.MPICH
     elif "microsoft" in version:
         return MPIImplementation.MSMPI
     else:
