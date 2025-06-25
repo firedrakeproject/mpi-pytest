@@ -64,6 +64,6 @@ jobs:
           : # 'forking' mode
           pytest -v tests
           : # 'non-forking' mode
-          ${{ matrix.mpiexec }} -n 1 pytest -v -m "not parallel or parallel[1]" tests
+          ${{ matrix.mpiexec }} -n 1 pytest -v -m parallel[1] tests
           ${{ matrix.mpiexec }} -n 2 pytest -v -m parallel[2] tests
           ${{ matrix.mpiexec }} -n 3 pytest -v -m parallel[3] tests
