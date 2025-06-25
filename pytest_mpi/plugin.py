@@ -305,9 +305,6 @@ class MPIImplementation(enum.Enum):
 
 @functools.cache
 def detect_mpi_implementation() -> MPIImplementation:
-    from mpi4py import rc
-
-    rc.initialize = rc.finalize = False
     from mpi4py.MPI import Get_library_version
 
     version = Get_library_version().casefold()
