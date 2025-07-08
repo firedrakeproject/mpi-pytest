@@ -1,10 +1,10 @@
 import collections
 import enum
+import functools
 import numbers
 import os
 import subprocess
 import sys
-from subprocess import CalledProcessError
 
 from pathlib import Path
 from warnings import warn
@@ -308,45 +308,33 @@ class MPIImplementation(enum.Enum):
     MSMPI = enum.auto()
 
 
+@functools.cache
 def detect_mpi_implementation() -> MPIImplementation:
-    result = None
+    from mpi4py.MPI import Get_library_version
 
-    try:
-        result = subprocess.run(
-            ["mpiexec", "--version"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            check=True
-        )
-    except CalledProcessError:
-        pass
+    version = Get_library_version().casefold()
 
-    # MSMPI can be detected by just calling 'mpiexec'
-    if result is None and sys.platform.casefold().startswith("win"):
-        try:
-            result = subprocess.run(
-                ["mpiexec"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                check=True
-            )
-        except CalledProcessError:
-            pass
-
-    if result is None:
+    if version is None:
         raise FileNotFoundError(
-            "'mpiexec' not found on your PATH, please run in non-forking mode "
+            "'mpi4py' could not find an MPI version, please run in non-forking mode "
             "where you can specify a different MPI executable"
         )
 
-    output = result.stdout.lower()
-    if "open mpi" in output or "open-rte" in output:
-        return MPIImplementation.OPENMPI
-    elif "mpich" in output:
+    if "mpich" in version:
         return MPIImplementation.MPICH
-    elif "microsoft" in output:
+    elif any(
+        version_str in version
+        for version_str in [
+            "open mpi",
+            "open-mpi",
+            "openmpi",
+            "openrte",
+            "open rte",
+            "open-rte",
+        ]
+    ):
+        return MPIImplementation.OPENMPI
+    elif "microsoft" in version:
         return MPIImplementation.MSMPI
     else:
         raise RuntimeError(
