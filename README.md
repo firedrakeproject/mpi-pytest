@@ -84,6 +84,9 @@ This is convenient for development for a number of reasons:
 
 There are however a number of downsides:
 
+* Not all MPI distributions support running in this format because it involves nested
+  calls to `MPI_Init` (as the parent process will often call `MPI_Init` during import).
+  **In particular the OpenMPI packaged with Ubuntu will not run in this mode.**
 * Forking a subprocess can be expensive since a completely fresh Python interpreter
   is launched each time.
 * Sandboxing each test means that polluted global state at the end of a test cannot
