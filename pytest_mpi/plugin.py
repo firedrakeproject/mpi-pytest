@@ -88,7 +88,22 @@ def pytest_generate_tests(metafunc):
 
 @pytest.hookimpl()
 def pytest_collection_modifyitems(config, items):
-    """Add 'parallel[N]' markers to each test."""
+    """Add 'parallel' markers to each test.
+
+    For instance, if the test is marked:
+
+        @pytest.mark.parallel([1, 3])
+
+    then it is given markers 'parallel[1]' and 'parallel[3]'.
+
+    Tests without the parallel marker are marked 'parallel[1]'.
+
+    Tests with matching parallelism to the outer 'mpiexec' call are
+    additionally marked 'parallel[match]'.
+
+    """
+    from mpi4py import MPI
+
     global _plugin_in_use
 
     _plugin_in_use = any(item.get_closest_marker("parallel") for item in items)
@@ -96,13 +111,19 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if item.get_closest_marker("parallel"):
             nprocs = _extract_nprocs_for_single_test(item)
-            marker_name = f"parallel[{nprocs}]"
         else:
             # mark serial tests as 'parallel[1]'
-            marker_name = "parallel[1]"
+            nprocs = 1
 
-        _maybe_register_marker(config, marker_name)
-        item.add_marker(getattr(pytest.mark, marker_name))
+        _attach_marker(config, item, f"parallel[{nprocs}]")
+        if nprocs == MPI.COMM_WORLD.size and not _is_parallel_child_process():
+            _attach_marker(config, item, f"parallel[match]")
+
+
+def _attach_marker(config, item, marker_name):
+    """Attach ``marker_name`` to a test."""
+    _maybe_register_marker(config, marker_name)
+    item.add_marker(getattr(pytest.mark, marker_name))
 
 
 def _maybe_register_marker(config, marker_name: str) -> None:
