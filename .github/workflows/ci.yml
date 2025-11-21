@@ -75,7 +75,11 @@ jobs:
           echo $PYTEST_CALL
 
           echo here
-          ${{ matrix.mpiexec }} -n 1 $PYTEST_CALL -m parallel[1] | grep "<Function " > pytest_output_1.out
+          ${{ matrix.mpiexec }} -n 1 $PYTEST_CALL -m parallel[1]
+          echo ABC
+          ${{ matrix.mpiexec }} -n 1 $PYTEST_CALL -m parallel[1] | grep "<Function "
+          # ${{ matrix.mpiexec }} -n 1 $PYTEST_CALL -m parallel[1] | grep "<Function " > pytest_output_1.out
+          echo here now
           ${{ matrix.mpiexec }} -n 1 $PYTEST_CALL -m parallel[match] | grep "<Function " > pytest_output_1_match.out
           echo here
           cat pytest_output_1.out
