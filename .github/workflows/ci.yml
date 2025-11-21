@@ -73,20 +73,24 @@ jobs:
         run: |
           PYTEST_CALL="pytest --co --quiet --color no --no-header --no-summary tests"
 
-          ${{ matrix.mpiexec }} -n 1 $PYTEST_CALL -m parallel[1] | grep "<Function " | tee pytest_output_1.out
-          ${{ matrix.mpiexec }} -n 1 $PYTEST_CALL -m parallel[match] | grep "<Function " | tee pytest_output_1_match.out
+          ${{ matrix.mpiexec }} -n 1 $PYTEST_CALL -m parallel[1] | grep "<Function " > pytest_output_1.out
+          ${{ matrix.mpiexec }} -n 1 $PYTEST_CALL -m parallel[match] | grep "<Function " > pytest_output_1_match.out
+          cat pytest_output_1.out
           diff pytest_output_1.out pytest_output_1_match.out
 
           $PYTEST_CALL -m parallel[1] | grep "<Function " | tee pytest_output_1_serial.out
           diff pytest_output_1.out pytest_output_1_serial.out
 
-          for n in $(seq 1 3)
+          for n in $(seq 2 3)
           do
             ${{ matrix.mpiexec }} -n 1 $PYTEST_CALL -m parallel[$n] \
               : -n $((n-1)) bash -c "$PYTEST_CALL -m parallel[$n] > /dev/null" \
-              | grep "<Function " | tee pytest_output_${n}.out
+              | grep "<Function " > pytest_output_${n}.out
             ${{ matrix.mpiexec }} -n 1 $PYTEST_CALL -m parallel[match] \
               : -n $((n-1)) bash -c "$PYTEST_CALL -m parallel[match] > /dev/null" \
-              | grep "<Function " | tee pytest_output_${n}_match.out
+              | grep "<Function " > pytest_output_${n}_match.out
+            echo test
+            cat pytest_output_${n}.out
+            cat pytest_output_${n}_match.out
             diff pytest_output_${n}.out pytest_output_${n}_match.out
           done
