@@ -72,9 +72,12 @@ jobs:
         # Check that the same tests are collected for 'parallel[N]' and 'parallel[match]'
         run: |
           PYTEST_CALL="pytest --co --quiet --color no --no-header --no-summary tests"
+          echo $PYTEST_CALL
 
+          echo here
           ${{ matrix.mpiexec }} -n 1 $PYTEST_CALL -m parallel[1] | grep "<Function " > pytest_output_1.out
           ${{ matrix.mpiexec }} -n 1 $PYTEST_CALL -m parallel[match] | grep "<Function " > pytest_output_1_match.out
+          echo here
           cat pytest_output_1.out
           diff pytest_output_1.out pytest_output_1_match.out
 
@@ -83,12 +86,8 @@ jobs:
 
           for n in $(seq 2 3)
           do
-            ${{ matrix.mpiexec }} -n 1 $PYTEST_CALL -m parallel[$n] \
-              : -n $((n-1)) bash -c "$PYTEST_CALL -m parallel[$n] > /dev/null" \
-              | grep "<Function " > pytest_output_${n}.out
-            ${{ matrix.mpiexec }} -n 1 $PYTEST_CALL -m parallel[match] \
-              : -n $((n-1)) bash -c "$PYTEST_CALL -m parallel[match] > /dev/null" \
-              | grep "<Function " > pytest_output_${n}_match.out
+            ${{ matrix.mpiexec }} -n 1 $PYTEST_CALL -m parallel[$n] : -n $((n-1)) bash -c "$PYTEST_CALL -m parallel[$n] > /dev/null" | grep "<Function " > pytest_output_${n}.out
+            ${{ matrix.mpiexec }} -n 1 $PYTEST_CALL -m parallel[match] : -n $((n-1)) bash -c "$PYTEST_CALL -m parallel[match] > /dev/null" | grep "<Function " > pytest_output_${n}_match.out
             echo test
             cat pytest_output_${n}.out
             cat pytest_output_${n}_match.out
