@@ -99,7 +99,7 @@ def pytest_collection_modifyitems(config, items):
     Tests without the parallel marker are marked 'parallel[1]'.
 
     Tests with matching parallelism to the outer 'mpiexec' call are
-    additionally marked 'parallel[same]'.
+    additionally marked 'parallel[match]'.
 
     """
     from mpi4py import MPI
@@ -117,7 +117,7 @@ def pytest_collection_modifyitems(config, items):
 
         _attach_marker(config, item, f"parallel[{nprocs}]")
         if nprocs == MPI.COMM_WORLD.size and not _is_parallel_child_process():
-            _attach_marker(config, item, f"parallel[same]")
+            _attach_marker(config, item, f"parallel[match]")
 
 
 def _attach_marker(config, item, marker_name):

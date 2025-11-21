@@ -54,6 +54,13 @@ For example, to select all parallel tests on 3 processors, one should run:
 $ mpiexec -n 3 pytest -m parallel[3]
 ```
 
+It is also possible to specify that only tests with a matching level of parallelism
+to the outer `mpiexec` call be run. For example:
+```bash
+$ mpiexec -n 3 pytest -m parallel[match]
+```
+is equivalent to passing `-m parallel[3]`.
+
 Serial tests - those either unmarked or marked `@pytest.mark.parallel(1)` - can
 be selected by running:
 
