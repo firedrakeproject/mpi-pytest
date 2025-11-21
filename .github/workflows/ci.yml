@@ -70,7 +70,7 @@ jobs:
 
       - name: Check 'parallel[same]' marker
         # Redirecting stdout uses OpenMPI-specific arguments to 'mpiexec'
-        if: matrix.mpi = 'openmpi'
+        if: matrix.mpi == 'openmpi'
         # Check that the same tests are collected for 'parallel[#]' and 'parallel[same]'
         run: |
           for n in $(seq 1 3)
