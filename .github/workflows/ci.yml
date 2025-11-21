@@ -71,7 +71,7 @@ jobs:
       - name: Check 'parallel[same]' marker
         # Check that the same tests are collected for 'parallel[#]' and 'parallel[same]'
         run: |
-          PYTEST_CALL="pytest --co --quiet tests"
+          PYTEST_CALL="pytest --co --quiet tests --color no"
 
           ${{ matrix.mpiexec }} -n 1 $PYTEST_CALL -m parallel[1] > pytest_output_1.out
           ${{ matrix.mpiexec }} -n 1 $PYTEST_CALL -m parallel[same] > pytest_output_1_same.out
