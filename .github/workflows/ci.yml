@@ -67,3 +67,15 @@ jobs:
           ${{ matrix.mpiexec }} -n 1 pytest -v -m parallel[1] tests
           ${{ matrix.mpiexec }} -n 2 pytest -v -m parallel[2] tests
           ${{ matrix.mpiexec }} -n 3 pytest -v -m parallel[3] tests
+
+      - name: Check 'parallel[same]' marker
+        # Redirecting stdout uses OpenMPI-specific arguments to 'mpiexec'
+        if: matrix.mpi = 'openmpi'
+        # Check that the same tests are collected for 'parallel[#]' and 'parallel[same]'
+        run: |
+          for n in $(seq 1 3)
+          do
+            ${{ matrix.mpiexec }} -n ${n} --output-filename pytest_output_${n} pytest -m parallel[3] --co --quiet tests
+            ${{ matrix.mpiexec }} -n ${n} --output-filename pytest_output_${n}_same pytest -m parallel[same] --co --quiet tests
+            diff pytest_output_${n}.*.0.out pytest_output_${n}_same.*.0.out
+          done
