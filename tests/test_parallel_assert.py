@@ -9,7 +9,7 @@ def test_parallel_assert_equivalent_to_assert_in_serial(expression):
         parallel_assert(expression)
         parallel_raised_exception = False
     except AssertionError:
-        parallel_raised_exception = True  
+        parallel_raised_exception = True
     try:
         assert expression
         serial_raised_exception = False
